@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where([data-theme=dark], [data-theme=dark] *));
+
 :root {
   --background: #ffffff;
   --foreground: #171717;
@@ -12,6 +14,23 @@
   --font-mono: var(--font-geist-mono);
 }
 
+@theme {
+  --breakpoint-xs: 500px;
+  --breakpoint-sm: 600px;
+  --breakpoint-md: 690px;
+  --breakpoint-lg: 988px;
+  --breakpoint-xl: 1078px;
+  --breakpoint-2xl: 1265px;
+
+  --color-textGray: #71767b;
+  --color-textGrayLight: #e7e9ea;
+  --color-borderGray: #2f3336;
+  --color-inputGray: #202327;
+
+  --color-iconBlue: #1d9bf0;
+  --color-iconGreen: #00ba7c;
+  --color-iconPink: #f91880;
+}
 @media (prefers-color-scheme: dark) {
   :root {
     --background: #0a0a0a;
