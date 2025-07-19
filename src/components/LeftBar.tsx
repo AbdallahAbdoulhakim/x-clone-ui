@@ -1,4 +1,4 @@
-import Image from "next/image";
+import IkImage from "@/components/IkImage";
 import Link from "next/link";
 
 const menuList = [
@@ -71,7 +71,7 @@ export default function LeftBar() {
       <div className="flex flex-col gap-2 text-lg items-center 2xl:items-start">
         {/*  LOGO */}
         <Link href="/" className="p-2 rounded-full hover:bg-[#181818]">
-          <Image src="icons/logo.svg" alt="logo" width={24} height={24} />
+          <IkImage path="icons/logo.svg" alt="logo" w={24} h={24} />
         </Link>
 
         {/* MENU LIST */}
@@ -82,11 +82,11 @@ export default function LeftBar() {
               key={menuItem.id}
               className="p-2 rounded-full hover:bg-[#181818] flex items-center gap-4"
             >
-              <Image
-                src={`icons/${menuItem.icon}`}
+              <IkImage
+                path={`/icons/${menuItem.icon}`}
                 alt={menuItem.name}
-                width={24}
-                height={24}
+                w={24}
+                h={24}
               />
               <span className="hidden 2xl:inline">{menuItem.name}</span>
             </Link>
@@ -99,7 +99,7 @@ export default function LeftBar() {
           className="2xl:hidden bg-white text-black rounded-full w-12 h-12 flex items-center justify-center"
           href="/"
         >
-          <Image src="/icons/post.svg" alt="new post" width={24} height={24} />
+          <IkImage path="/icons/post.svg" alt="new post" w={24} h={24} />
         </Link>
         <Link
           className="hidden 2xl:block bg-white text-black rounded-full font-bold py-2 px-20"
@@ -113,7 +113,13 @@ export default function LeftBar() {
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <div className="w-10 h-10 relative rounded-full overflow-hidden">
-            <Image src="/general/avatar.png" alt="Wildy Rachik" fill />
+            <IkImage
+              path="/general/avatar.png"
+              alt="Wildy Rachik"
+              w={40}
+              h={40}
+              tr={true}
+            />
           </div>
           <div className="hidden 2xl:flex flex-col">
             <span className="font-bold">Wildy Rachik</span>
