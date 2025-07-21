@@ -2,11 +2,12 @@ import IkImage from "@/components/IkImage";
 import PostInfos from "@/components/PostInfos";
 import PostInteractions from "@/components/PostInteractions";
 import { getFileDetails } from "@/utils/imagekitFile";
+import IkVideo from "./IkVideo";
+import Link from "next/link";
 
-export default async function Post() {
+export default async function Post({ type }: { type?: "status" | "comment" }) {
   const fileDetails = await getFileDetails("687d0adb5c7cd75eb88ec24b");
 
-  console.log(fileDetails);
   return (
     <div className="p-4 border-y-[1px] border-borderGray">
       {/* POST TYPE */}
@@ -25,9 +26,16 @@ export default async function Post() {
         <span className="">Wildy Rachik reposted</span>
       </div>
       {/* POST CONTENT */}
-      <div className="flex gap-4">
+
+      <div className={`flex gap-4 ${type === "status" && "flex-col"}`}>
         {/* AVATAR */}
-        <div className="relative w-10 h-10 rounded-full overflow-hidden">
+        <div
+          className={`${
+            type === "status"
+              ? "hidden"
+              : "relative w-10 h-10 rounded-full overflow-hidden"
+          }`}
+        >
           <IkImage
             path="/general/avatar.png"
             alt=""
@@ -39,25 +47,57 @@ export default async function Post() {
         {/* CONTENT */}
         <div className="flex-1 flex flex-col gap-2">
           {/* TOP */}
-          <div className="flex items-center justify-between gap-2">
+          <div className="w-full flex justify-between">
+            <Link href={`/wildyrachik`} className="flex gap-4">
+              <div
+                className={`${
+                  type !== "status"
+                    ? "hidden"
+                    : "relative w-10 h-10 rounded-full overflow-hidden"
+                }`}
+              >
+                <IkImage
+                  path="/general/avatar.png"
+                  alt=""
+                  w={100}
+                  h={100}
+                  tr={true}
+                />
+              </div>
+              <div
+                className={`flex items-center gap-2 flex-wrap ${
+                  type === "status" && "flex-col gap-0 !items-start"
+                }`}
+              >
+                <h1 className="text-md font-bold">Wildy Rachik</h1>
+                <span
+                  className={`text-textGray ${type === "status" && "text-sm"}`}
+                >
+                  @wildyrachik
+                </span>
+                {type !== "status" && (
+                  <span className="text-textGray">1 day ago</span>
+                )}
+              </div>
+            </Link>
+
             {/* INFO */}
-            <div className="flex items-center gap-2 flex-wrap">
-              <h1 className="text-md font-bold">Wildy Rachik</h1>
-              <span className="text-textGray">@wildyrachik</span>
-              <span className="text-textGray">1 day ago</span>
-            </div>
+
             <PostInfos />
           </div>
           {/* TEXT & MEDIA */}
-          <p className="">
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit. At, odit!
-            Dolore sint quo eveniet, ab consectetur porro incidunt
-            necessitatibus labore perferendis repudiandae sit delectus
-            architecto assumenda quaerat repellat, tenetur officia.
-          </p>
+          <Link href={`/wildyrachik/status/response`}>
+            <p className={`${type === "status" && "text-lg"}`}>
+              Lorem ipsum dolor sit amet, consectetur adipisicing elit. At,
+              odit! Dolore sint quo eveniet, ab consectetur porro incidunt
+              necessitatibus labore perferendis repudiandae sit delectus
+              architecto assumenda quaerat repellat, tenetur officia.
+            </p>
+          </Link>
+
           {/* <IkImage path="general/post.jpeg" w={600} h={600} alt="" /> */}
 
-          {fileDetails && (
+          {fileDetails && fileDetails.fileType === "image" ? (
             <IkImage
               path={fileDetails.filePath}
               alt=""
@@ -65,7 +105,16 @@ export default async function Post() {
               h={fileDetails.height}
               className={fileDetails.customMetadata?.sensitive ? "blur-lg" : ""}
             />
+          ) : (
+            <IkVideo
+              path={fileDetails.filePath}
+              className={fileDetails.customMetadata?.sensitive ? "blur-lg" : ""}
+            />
           )}
+          {type === "status" && (
+            <span className="text-textGray">8:41 PM . Dec 5, 2024</span>
+          )}
+
           <PostInteractions />
         </div>
       </div>

@@ -10,12 +10,12 @@ export default function ImageEditor({
   onClose: () => void;
   previewURL: string;
   settings: {
-    type: "original" | "wide" | "square";
+    type?: "original" | "wide" | "square";
     sensitive: boolean;
   };
   setSettings: Dispatch<
     SetStateAction<{
-      type: "original" | "wide" | "square";
+      type?: "original" | "wide" | "square";
       sensitive: boolean;
     }>
   >;

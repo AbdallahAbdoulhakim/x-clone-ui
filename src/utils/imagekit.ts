@@ -62,7 +62,7 @@ const authenticator = async () => {
 export const handleUpload = async (
   fileInputRef: RefObject<HTMLInputElement | null>,
   settings: {
-    type: "original" | "wide" | "square";
+    type?: "original" | "wide" | "square";
     sensitive: boolean;
   }
   //   setProgress: Dispatch<SetStateAction<number>>
@@ -116,9 +116,11 @@ export const handleUpload = async (
       file,
       fileName: file.name, // Optionally set a custom file name
       folder: "/posts",
-      transformation: {
-        pre: transformation,
-      },
+      ...(file.type.includes("image") && {
+        transformation: {
+          pre: transformation,
+        },
+      }),
       customMetadata: {
         sensitive: settings.sensitive,
       },

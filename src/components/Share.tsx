@@ -11,7 +11,7 @@ export default function Share() {
   const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
 
   const [settings, setSettings] = useState<{
-    type: "original" | "wide" | "square";
+    type?: "original" | "wide" | "square";
     sensitive: boolean;
   }>({
     type: "original",
@@ -30,9 +30,12 @@ export default function Share() {
 
   const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const res = await handleUpload(fileInputRef, settings);
 
-    console.log(res);
+    if (!media || !previewURL) {
+      return;
+    }
+
+    await handleUpload(fileInputRef, settings);
   };
 
   return (
@@ -50,7 +53,7 @@ export default function Share() {
           placeholder="What's happening?"
         />
         {/* PREVIEW IMAGE */}
-        {previewURL && (
+        {media?.type.includes("image") && previewURL && (
           <div className="relative rounded-xl overflow-hidden">
             <Image
               className={`w-full ${
@@ -66,10 +69,29 @@ export default function Share() {
               height={600}
             />
             <div
+              onClick={() => setMedia(null)}
+              className="absolute top-2 right-2 bg-black/50 text-white h-8 w-8 flex items-center justify-center rounded-full cursor-pointer font-bold text-sm"
+            >
+              X
+            </div>
+            <div
               className="absolute top-2 left-2 bg-black opacity-50 text-white py-1 px-4 rounded-full font-bold text-sm cursor-pointer"
               onClick={() => setIsEditorOpen(true)}
             >
               Edit
+            </div>
+          </div>
+        )}
+
+        {/* PREVIEW VIDEO */}
+        {media?.type.includes("video") && previewURL && (
+          <div className="relative">
+            <video src={previewURL} controls={true} />
+            <div
+              onClick={() => setMedia(null)}
+              className="absolute top-2 right-2 bg-black/50 text-white h-8 w-8 flex items-center justify-center rounded-full cursor-pointer font-bold text-sm"
+            >
+              X
             </div>
           </div>
         )}
@@ -88,7 +110,7 @@ export default function Share() {
               id="file"
               name="file"
               className="hidden"
-              accept="image/*"
+              accept="image/*,video/*"
               type="file"
               ref={fileInputRef}
               onChange={handleMediaChange}

@@ -97,13 +97,13 @@ export default function LeftBar() {
 
         <Link
           className="2xl:hidden bg-white text-black rounded-full w-12 h-12 flex items-center justify-center"
-          href="/"
+          href="/compose/post"
         >
           <IkImage path="/icons/post.svg" alt="new post" w={24} h={24} />
         </Link>
         <Link
           className="hidden 2xl:block bg-white text-black rounded-full font-bold py-2 px-20"
-          href="/"
+          href="/compose/post"
         >
           Post
         </Link>
