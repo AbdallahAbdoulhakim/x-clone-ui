@@ -6,10 +6,25 @@ import {
   ImageKitServerError,
   ImageKitUploadNetworkError,
   upload,
+  UploadResponse,
 } from "@imagekit/next";
 
 // Create an AbortController instance to provide an option to cancel the upload if needed.
 const abortController = new AbortController();
+
+type ReturnType = {
+  success: boolean;
+  response?: UploadResponse;
+  errType?:
+    | "AbortError"
+    | "InvalidRequestError"
+    | "UploadNetworkError"
+    | "ServerError"
+    | "UnkownError"
+    | "FileError"
+    | "AuthError";
+  message?: string;
+};
 
 const authenticator = async () => {
   try {
@@ -45,14 +60,17 @@ const authenticator = async () => {
  * - Catches and processes errors accordingly.
  */
 export const handleUpload = async (
-  fileInputRef: RefObject<HTMLInputElement | null>
+  fileInputRef: RefObject<HTMLInputElement | null>,
+  settings: {
+    type: "original" | "wide" | "square";
+    sensitive: boolean;
+  }
   //   setProgress: Dispatch<SetStateAction<number>>
-) => {
+): Promise<ReturnType> => {
   // Access the file input element using the ref
   const fileInput = fileInputRef.current;
   if (!fileInput || !fileInput.files || fileInput.files.length === 0) {
-    alert("Please select a file to upload");
-    return;
+    return { success: false, errType: "FileError" };
   }
 
   // Extract the first file from the file input
@@ -62,11 +80,30 @@ export const handleUpload = async (
   let authParams;
   try {
     authParams = await authenticator();
-  } catch (authError) {
-    console.error("Failed to authenticate for upload:", authError);
-    return;
+  } catch (authError: unknown) {
+    if (authError instanceof Error) {
+      return {
+        success: false,
+        errType: "AuthError",
+        message: authError.message,
+      };
+    } else {
+      return {
+        success: false,
+        errType: "AuthError",
+        message: "An unkown authentication error occured!",
+      };
+    }
   }
   const { signature, expire, token, publicKey } = authParams;
+
+  const transformation = `${
+    settings.type === "square"
+      ? "ar-1-1"
+      : settings.type === "wide"
+      ? "ar-16-9"
+      : ""
+  },w-600`;
 
   // Call the ImageKit SDK upload function with the required parameters and callbacks.
   try {
@@ -78,6 +115,13 @@ export const handleUpload = async (
       publicKey,
       file,
       fileName: file.name, // Optionally set a custom file name
+      folder: "/posts",
+      transformation: {
+        pre: transformation,
+      },
+      customMetadata: {
+        sensitive: settings.sensitive,
+      },
       // Progress callback to update upload progress state
       //   onProgress: (event) => {
       //     setProgress((event.loaded / event.total) * 100);
@@ -85,20 +129,33 @@ export const handleUpload = async (
       // Abort signal to allow cancellation of the upload if needed.
       abortSignal: abortController.signal,
     });
-    console.log("Upload response:", uploadResponse);
+
+    return { success: true, response: uploadResponse };
   } catch (error) {
     // Handle specific error types provided by the ImageKit SDK.
     if (error instanceof ImageKitAbortError) {
-      console.error("Upload aborted:", error.reason);
+      return { success: false, errType: "AbortError", message: error.message };
     } else if (error instanceof ImageKitInvalidRequestError) {
-      console.error("Invalid request:", error.message);
+      return {
+        success: false,
+        errType: "InvalidRequestError",
+        message: error.message,
+      };
     } else if (error instanceof ImageKitUploadNetworkError) {
-      console.error("Network error:", error.message);
+      return {
+        success: false,
+        errType: "UploadNetworkError",
+        message: error.message,
+      };
     } else if (error instanceof ImageKitServerError) {
-      console.error("Server error:", error.message);
+      return { success: false, errType: "ServerError", message: error.message };
     } else {
       // Handle any other errors that may occur.
-      console.error("Upload error:", error);
+      return {
+        success: false,
+        errType: "UnkownError",
+        message: "An unkonw error occured!",
+      };
     }
   }
 };

@@ -1,8 +1,12 @@
 import IkImage from "@/components/IkImage";
 import PostInfos from "@/components/PostInfos";
 import PostInteractions from "@/components/PostInteractions";
+import { getFileDetails } from "@/utils/imagekitFile";
 
-export default function Post() {
+export default async function Post() {
+  const fileDetails = await getFileDetails("687d0adb5c7cd75eb88ec24b");
+
+  console.log(fileDetails);
   return (
     <div className="p-4 border-y-[1px] border-borderGray">
       {/* POST TYPE */}
@@ -51,7 +55,17 @@ export default function Post() {
             necessitatibus labore perferendis repudiandae sit delectus
             architecto assumenda quaerat repellat, tenetur officia.
           </p>
-          <IkImage path="general/post.jpeg" w={600} h={600} alt="" />
+          {/* <IkImage path="general/post.jpeg" w={600} h={600} alt="" /> */}
+
+          {fileDetails && (
+            <IkImage
+              path={fileDetails.filePath}
+              alt=""
+              w={fileDetails.width}
+              h={fileDetails.height}
+              className={fileDetails.customMetadata?.sensitive ? "blur-lg" : ""}
+            />
+          )}
           <PostInteractions />
         </div>
       </div>

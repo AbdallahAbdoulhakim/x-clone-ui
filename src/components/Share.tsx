@@ -2,10 +2,21 @@
 
 import IKImage from "@/components/IkImage";
 import { handleUpload } from "@/utils/imagekit";
+import Image from "next/image";
 import { useState, useRef, FormEvent } from "react";
+import ImageEditor from "./ImageEditor";
 
 export default function Share() {
   const [media, setMedia] = useState<File | null>(null);
+  const [isEditorOpen, setIsEditorOpen] = useState<boolean>(false);
+
+  const [settings, setSettings] = useState<{
+    type: "original" | "wide" | "square";
+    sensitive: boolean;
+  }>({
+    type: "original",
+    sensitive: false,
+  });
 
   const fileInputRef = useRef<HTMLInputElement>(null);
 
@@ -15,15 +26,18 @@ export default function Share() {
     }
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const previewURL = media ? URL.createObjectURL(media) : null;
+
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    handleUpload(fileInputRef);
+    const res = await handleUpload(fileInputRef, settings);
+
+    console.log(res);
   };
 
   return (
     <form onSubmit={handleSubmit} className="p-4 flex gap-4">
       {/* AVATAR */}
-
       <div className="relative w-10 h-10 rounded-full overflow-hidden">
         <IKImage path="general/avatar.png" alt="" w={100} h={100} tr={true} />
       </div>
@@ -35,6 +49,39 @@ export default function Share() {
           name="description"
           placeholder="What's happening?"
         />
+        {/* PREVIEW IMAGE */}
+        {previewURL && (
+          <div className="relative rounded-xl overflow-hidden">
+            <Image
+              className={`w-full ${
+                settings.type === "original"
+                  ? "h-full object-contain"
+                  : settings.type === "square"
+                  ? "aspect-square object-cover"
+                  : "aspect-video object-cover"
+              }`}
+              src={previewURL}
+              alt="New Post"
+              width={600}
+              height={600}
+            />
+            <div
+              className="absolute top-2 left-2 bg-black opacity-50 text-white py-1 px-4 rounded-full font-bold text-sm cursor-pointer"
+              onClick={() => setIsEditorOpen(true)}
+            >
+              Edit
+            </div>
+          </div>
+        )}
+
+        {isEditorOpen && previewURL && (
+          <ImageEditor
+            onClose={() => setIsEditorOpen(false)}
+            previewURL={previewURL}
+            settings={settings}
+            setSettings={setSettings}
+          />
+        )}
         <div className="flex items-center justify-between gap-4 flex-wrap">
           <div className="flex gap-4 flex-wrap">
             <input
