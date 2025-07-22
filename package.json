@@ -6,14 +6,18 @@
     "dev": "next dev --turbopack",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint"
+    "lint": "next lint",
+    "seed": "tsx prisma/seed.ts"
   },
   "dependencies": {
     "@imagekit/next": "^2.1.2",
+    "@prisma/client": "^6.12.0",
     "imagekit": "^6.0.0",
     "next": "15.4.2",
+    "prisma": "^6.12.0",
     "react": "19.1.0",
     "react-dom": "19.1.0",
+    "tsx": "^4.20.3",
     "uuid": "^11.1.0"
   },
   "devDependencies": {
