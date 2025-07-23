@@ -29,12 +29,12 @@ const users = [
     website: "inseed-comores.org",
   },
   {
-    email: "tchadli79@gmail.com",
-    username: "tchadli79",
-    displayName: "Mohamed Ali Tchadli",
-    bio: "Hi I'm Mohamed Ali Tchadli. Welcome to my profile.",
+    email: "wildyrachik@gmail.com ",
+    username: "wildyrachik",
+    displayName: "Wildy Rachik",
+    bio: "Hi I'm Rachik. Welcome to my profile.",
     location: "Comores",
-    job: "Statistician",
+    job: "Informatician",
     website: "inseed-comores.org",
   },
 ];

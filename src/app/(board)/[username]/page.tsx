@@ -1,8 +1,20 @@
 import Feed from "@/components/Feed";
 import IkImage from "@/components/IkImage";
+import { prisma } from "@/prisma";
 import Link from "next/link";
+import { notFound } from "next/navigation";
 
-export default function UserPage() {
+export default async function UserPage({
+  params,
+}: {
+  params: Promise<{ username: string }>;
+}) {
+  const { username } = await params;
+
+  const user = await prisma.user.findUnique({ where: { username } });
+
+  if (!user) return notFound();
+
   return (
     <div className="">
       {/* PROFILE TITLE */}
@@ -85,7 +97,7 @@ export default function UserPage() {
         </div>
       </div>
       {/* FEED */}
-      <Feed />
+      <Feed userProfileId={user.id} />
     </div>
   );
 }

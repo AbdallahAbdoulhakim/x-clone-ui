@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import LeftBar from "@/components/LeftBar";
-import RightBar from "@/components/RightBar";
+
+import { ClerkProvider } from "@clerk/nextjs";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -21,29 +21,19 @@ export const metadata: Metadata = {
 
 export default function RootLayout({
   children,
-  modal,
 }: Readonly<{
   children: React.ReactNode;
   modal: React.ReactNode;
 }>) {
   return (
-    <html lang="en" data-theme="dark">
-      <body
-        className={`bg-white! text-white! dark:bg-black! dark:text-white! ${geistSans.variable} ${geistMono.variable} antialiased`}
-      >
-        <div className="max-w-screen-md lg:max-w-screen-lg xl:max-w-screen-xl 2xl:max-w-screen-2xl mx-auto flex justify-between">
-          <div className="px-2 xs:px-4 2xl:px-8">
-            <LeftBar />
-          </div>
-          <div className="flex-1 lg:min-w-[600px] border-x-[1px] border-borderGray">
-            {children}
-            {modal}
-          </div>
-          <div className="hidden ml-4 xl:ml-8 lg:flex flex-1">
-            <RightBar />
-          </div>
-        </div>
-      </body>
-    </html>
+    <ClerkProvider>
+      <html lang="en" data-theme="dark">
+        <body
+          className={`bg-white! text-white! dark:bg-black! dark:text-white! ${geistSans.variable} ${geistMono.variable} antialiased`}
+        >
+          {children}
+        </body>
+      </html>
+    </ClerkProvider>
   );
 }

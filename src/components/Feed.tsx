@@ -1,8 +1,42 @@
 import Post from "@/components/Post";
 import { prisma } from "@/prisma";
+import { auth } from "@clerk/nextjs/server";
 
-export default async function Feed() {
-  const posts = await prisma.post.findMany();
+export default async function Feed({
+  userProfileId,
+}: {
+  userProfileId?: string;
+}) {
+  const { userId } = await auth();
+
+  if (!userId) {
+    return;
+  }
+
+  const whereCondition = userProfileId
+    ? { parentPostId: null, userId: userProfileId }
+    : {
+        parentPostId: null,
+        userId: {
+          in: [
+            userId,
+            ...(
+              await prisma.follow.findMany({
+                where: {
+                  followerId: userId,
+                },
+                select: { followingId: true },
+              })
+            ).map((elt) => elt.followingId),
+          ],
+        },
+      };
+
+  const posts = await prisma.post.findMany({ where: whereCondition });
+
+  console.log(posts);
+
+  // FETCH POSTS
   return (
     <div className="">
       {posts.map((post) => (
