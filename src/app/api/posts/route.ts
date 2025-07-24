@@ -1,18 +1,21 @@
-import Post from "@/components/Post";
-import { prisma } from "@/prisma";
 import { auth } from "@clerk/nextjs/server";
-import InfiniteFeed from "@/components//InfiniteFeed";
+import { prisma } from "@/prisma";
+import { NextRequest, NextResponse } from "next/server";
 
-export default async function Feed({
-  userProfileId,
-}: {
-  userProfileId?: string;
-}) {
+export async function GET(request: NextRequest) {
+  const searchParams = request.nextUrl.searchParams;
   const { userId } = await auth();
 
   if (!userId) {
-    return;
+    return NextResponse.json(
+      {
+        error: "Unauthenticated",
+      },
+      { status: 401 }
+    );
   }
+
+  const userProfileId = searchParams.get("user");
 
   const whereCondition = userProfileId
     ? { parentPostId: null, userId: userProfileId }
@@ -35,15 +38,5 @@ export default async function Feed({
 
   const posts = await prisma.post.findMany({ where: whereCondition });
 
-  // FETCH POSTS
-  return (
-    <div className="">
-      {posts.map((post) => (
-        <div key={post.id}>
-          <Post />
-        </div>
-      ))}
-      <InfiniteFeed />
-    </div>
-  );
+  return Response.json(posts);
 }
