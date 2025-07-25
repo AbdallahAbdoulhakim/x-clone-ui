@@ -16,27 +16,39 @@ export async function GET(request: NextRequest) {
   }
 
   const userProfileId = searchParams.get("user");
+  const page = Number(searchParams.get("cursor"));
+  const LIMIT = 3;
 
-  const whereCondition = userProfileId
-    ? { parentPostId: null, userId: userProfileId }
-    : {
-        parentPostId: null,
-        userId: {
-          in: [
-            userId,
-            ...(
-              await prisma.follow.findMany({
-                where: {
-                  followerId: userId,
-                },
-                select: { followingId: true },
-              })
-            ).map((elt) => elt.followingId),
-          ],
-        },
-      };
+  const whereCondition =
+    userProfileId !== "undefined"
+      ? { parentPostId: null, userId: userProfileId as string }
+      : {
+          parentPostId: null,
+          userId: {
+            in: [
+              userId,
+              ...(
+                await prisma.follow.findMany({
+                  where: {
+                    followerId: userId,
+                  },
+                  select: { followingId: true },
+                })
+              ).map((elt) => elt.followingId),
+            ],
+          },
+        };
 
-  const posts = await prisma.post.findMany({ where: whereCondition });
+  const [posts, totalPosts] = await prisma.$transaction([
+    prisma.post.findMany({
+      where: whereCondition,
+      take: LIMIT,
+      skip: (page - 1) * LIMIT,
+    }),
+    prisma.post.count({ where: whereCondition }),
+  ]);
 
-  return Response.json(posts);
+  const hasMore = page * LIMIT < totalPosts;
+
+  return Response.json({ posts, hasMore });
 }

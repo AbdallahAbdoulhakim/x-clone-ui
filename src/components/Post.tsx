@@ -1,12 +1,22 @@
 import IkImage from "@/components/IkImage";
 import PostInfos from "@/components/PostInfos";
 import PostInteractions from "@/components/PostInteractions";
-import { getFileDetails } from "@/utils/imagekitFile";
-import IkVideo from "./IkVideo";
+import { type Post as PostType } from "@/generated/prisma";
+// import { getFileDetails } from "@/utils/imagekitFile";
+// import IkVideo from "./IkVideo";
 import Link from "next/link";
+import { format } from "timeago.js";
+import IkImageFetcher from "./IkImageFetcher";
+import { getIkImageDetails } from "@/actions";
 
-export default async function Post({ type }: { type?: "status" | "comment" }) {
-  const fileDetails = await getFileDetails("687d0adb5c7cd75eb88ec24b");
+export default function Post({
+  type,
+  post,
+}: {
+  type?: "status" | "comment";
+  post: PostType;
+}) {
+  // const fileDetails = await getFileDetails("687d0adb5c7cd75eb88ec24b");
 
   return (
     <div className="p-4 border-y-[1px] border-borderGray">
@@ -76,7 +86,9 @@ export default async function Post({ type }: { type?: "status" | "comment" }) {
                   @wildyrachik
                 </span>
                 {type !== "status" && (
-                  <span className="text-textGray">1 day ago</span>
+                  <span className="text-textGray">
+                    {format(post.createdAt)}
+                  </span>
                 )}
               </div>
             </Link>
@@ -87,24 +99,15 @@ export default async function Post({ type }: { type?: "status" | "comment" }) {
           </div>
           {/* TEXT & MEDIA */}
           <Link href={`/wildyrachik/status/response`}>
-            <p className={`${type === "status" && "text-lg"}`}>
-              Lorem ipsum dolor sit amet, consectetur adipisicing elit. At,
-              odit! Dolore sint quo eveniet, ab consectetur porro incidunt
-              necessitatibus labore perferendis repudiandae sit delectus
-              architecto assumenda quaerat repellat, tenetur officia.
-            </p>
+            <p className={`${type === "status" && "text-lg"}`}>{post.desc}</p>
           </Link>
 
           {/* <IkImage path="general/post.jpeg" w={600} h={600} alt="" /> */}
 
-          {fileDetails && fileDetails.fileType === "image" ? (
-            <IkImage
-              path={fileDetails.filePath}
-              alt=""
-              w={fileDetails.width}
-              h={fileDetails.height}
-              className={fileDetails.customMetadata?.sensitive ? "blur-lg" : ""}
-            />
+          {post.img && <IkImageFetcher id={post.img} />}
+
+          {/* {fileDetails && fileDetails.fileType === "image" ? (
+           
           ) : (
             <IkVideo
               path={fileDetails.filePath}
@@ -113,7 +116,7 @@ export default async function Post({ type }: { type?: "status" | "comment" }) {
           )}
           {type === "status" && (
             <span className="text-textGray">8:41 PM . Dec 5, 2024</span>
-          )}
+          )} */}
 
           <PostInteractions />
         </div>

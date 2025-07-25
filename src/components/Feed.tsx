@@ -33,14 +33,19 @@ export default async function Feed({
         },
       };
 
-  const posts = await prisma.post.findMany({ where: whereCondition });
+  const posts = await prisma.post.findMany({
+    where: whereCondition,
+    take: 3,
+    skip: 0,
+    orderBy: { createdAt: "desc" },
+  });
 
   // FETCH POSTS
   return (
     <div className="">
       {posts.map((post) => (
         <div key={post.id}>
-          <Post />
+          <Post post={post} />
         </div>
       ))}
       <InfiniteFeed />
