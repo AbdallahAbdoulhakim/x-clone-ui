@@ -5,7 +5,17 @@ import { useEffect, useState } from "react";
 import { getIkImageDetails } from "@/actions";
 import { FileDetailResponse } from "@/utils/imagekitFile";
 
-export default function IkImageFetcher({ id }: { id: string }) {
+export default function IkImageFetcher({
+  id,
+  w,
+  h,
+  tr,
+}: {
+  id: string;
+  w?: number;
+  h?: number;
+  tr?: boolean;
+}) {
   const [fileDetails, setFileDetails] = useState<FileDetailResponse | null>(
     null
   );
@@ -59,8 +69,9 @@ export default function IkImageFetcher({ id }: { id: string }) {
     <IkImage
       path={fileDetails.filePath}
       alt=""
-      w={fileDetails.width}
-      h={fileDetails.height}
+      w={w || fileDetails.width}
+      h={h || fileDetails.height}
+      tr={tr || false}
       className={fileDetails.customMetadata?.sensitive ? "blur-lg" : ""}
     />
   );

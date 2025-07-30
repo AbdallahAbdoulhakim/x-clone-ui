@@ -27,6 +27,7 @@ const RegisterPage = () => {
         <h1 className="text-2xl ">Join today.</h1>
         <SignUp.Root>
           <SignUp.Step name="start" className="flex flex-col gap-4">
+            <SignUp.Captcha />
             <Clerk.Connection
               name="google"
               className="bg-white rounded-full p-2 text-black w-72 flex items-center justify-center gap-2 font-bold"
@@ -60,7 +61,7 @@ const RegisterPage = () => {
               </svg>
               Sign up with Apple
             </Clerk.Connection>
-            <SignUp.Captcha />
+
             <div className="flex flex-col gap-4">
               Sign up with Credentials
               <Clerk.Field name="username" className="flex flex-col gap-2">

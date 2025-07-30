@@ -1,8 +1,26 @@
 import Feed from "@/components/Feed";
+import FollowButton from "@/components/FollowButton";
 import IkImage from "@/components/IkImage";
+import IkImageFetcher from "@/components/IkImageFetcher";
 import { prisma } from "@/prisma";
+import { auth } from "@clerk/nextjs/server";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+
+const monthNames = [
+  "January",
+  "February",
+  "March",
+  "April",
+  "May",
+  "June",
+  "July",
+  "August",
+  "September",
+  "October",
+  "November",
+  "December",
+];
 
 export default async function UserPage({
   params,
@@ -10,8 +28,15 @@ export default async function UserPage({
   params: Promise<{ username: string }>;
 }) {
   const { username } = await params;
+  const { userId } = await auth();
 
-  const user = await prisma.user.findUnique({ where: { username } });
+  const user = await prisma.user.findUnique({
+    where: { username },
+    include: {
+      _count: { select: { followers: true, followings: true } },
+      followings: userId ? { where: { followerId: userId! } } : undefined,
+    },
+  });
 
   if (!user) return notFound();
 
@@ -22,23 +47,27 @@ export default async function UserPage({
         <Link href="/">
           <IkImage path="icons/back.svg" alt="back" w={24} h={24} />
         </Link>
-        <h1 className="font-bold text-lg">Wildy Rachik</h1>
+        <h1 className="font-bold text-lg">{user.displayName}</h1>
       </div>
       {/* INFO */}
       <div className="">
         {/* COVER AND AVATAR */}
         <div className="relative w-full">
           {/* COVER */}
-          <div className="w-full aspect-[3/1]">
-            <IkImage path="general/cover.jpg" alt="" w={600} h={200} />
+          <div className="w-full aspect-[3/1] flex items-center justify-center">
+            <IkImageFetcher
+              id={user.cover || "688870845c7cd75eb85dccd9"}
+              w={600}
+              h={200}
+              tr={true}
+            />
           </div>
           {/* AVATAR */}
-          <div className="w-1/5 aspect-square rounded-full overflow-hidden border-4 border-black bg-gray-300 absolute left-4 -translate-y-1/2 ">
-            <IkImage
-              path="general/avatar.png"
-              alt=""
-              w={100}
-              h={100}
+          <div className="w-1/5 aspect-square rounded-full overflow-hidden border-4 border-black bg-gray-300 absolute left-4 -translate-y-1/2 flex items-center justify-center">
+            <IkImageFetcher
+              id={user.image || "68871a075c7cd75eb8e2a2d4"}
+              w={150}
+              h={150}
               tr={true}
             />
           </div>
@@ -53,9 +82,12 @@ export default async function UserPage({
           <div className="w-9 h-9 flex items-center justify-center rounded-full border-[1px] border-gray-500 cursor-pointer">
             <IkImage path="icons/message.svg" alt="message" w={20} h={20} />
           </div>
-          <button className="py-2 px-4 bg-white text-black font-bold rounded-full">
-            Follow
-          </button>
+          {userId && (
+            <FollowButton
+              userId={user.id}
+              isFollowed={!!user.followings.length}
+            />
+          )}
         </div>
 
         {/* USER DETAILS */}
@@ -63,34 +95,42 @@ export default async function UserPage({
         <div className="p-4 flex flex-col gap-2">
           {/* USERNAME & HANDLE */}
           <div className="">
-            <h1 className="text-2xl font-bold">Wildy Rachik</h1>
-            <span className="text-textGray text-sm">@wildyrachik</span>
+            <h1 className="text-2xl font-bold">{user.displayName}</h1>
+            <span className="text-textGray text-sm">@{user.username}</span>
           </div>
-          <p>Lama Dev Youtube Channel</p>
+          {user.bio && <p>{user.bio}</p>}
           {/* JOB & LOCATION 1  */}
           <div className="flex gap-4 text-textGray text-[15px]">
-            <div className="flex items-center gap-2">
-              <IkImage
-                path="icons/userLocation.svg"
-                alt="location"
-                w={20}
-                h={20}
-              />
-              <span className="">USA</span>
-            </div>
+            {user.location && (
+              <div className="flex items-center gap-2">
+                <IkImage
+                  path="icons/userLocation.svg"
+                  alt="location"
+                  w={20}
+                  h={20}
+                />
+                <span className="">{user.location}</span>
+              </div>
+            )}
             <div className="flex items-center gap-2">
               <IkImage path="icons/date.svg" alt="date" w={20} h={20} />
-              <span className="">Joined May 2011</span>
+              <span className="">
+                Joined in{" "}
+                {new Date(user.createdAt.toString()).toLocaleDateString(
+                  "en-US",
+                  { month: "long", year: "numeric" }
+                )}
+              </span>
             </div>
           </div>
           {/*  FOLLOWING & FOLLOWS */}
           <div className="flex gap-4">
             <div className="flex items-center gap-2">
-              <span>100</span>
+              <span>{user._count.followers}</span>
               <span className="text-textGray text-[15px]">Followers</span>
             </div>
             <div className="flex items-center gap-2">
-              <span>100</span>
+              <span>{user._count.followings}</span>
               <span className="text-textGray text-[15px]">Followings</span>
             </div>
           </div>

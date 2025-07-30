@@ -5,6 +5,42 @@ import InfiniteScroll from "react-infinite-scroll-component";
 import { Post as PostType } from "@/generated/prisma";
 import Post from "./Post";
 
+type PostWithDetails = PostType & {
+  user: {
+    displayName?: string;
+    username: string;
+    image: string | null;
+  };
+
+  rePost?:
+    | (PostType & {
+        user: {
+          displayName?: string;
+          username: string;
+          image: string | null;
+        };
+        _count: {
+          likes: number;
+          rePosts: number;
+          comments: number;
+        };
+        likes: { id: string }[];
+        rePosts: { id: string }[];
+        comments: { id: string }[];
+        saves: { id: string }[];
+      })
+    | null;
+  _count: {
+    likes: number;
+    rePosts: number;
+    comments: number;
+  };
+  likes: { id: string }[];
+  rePosts: { id: string }[];
+  comments: { id: string }[];
+  saves: { id: string }[];
+};
+
 const fetchPosts = async (pageParam: number, userProfileId?: string) => {
   const res = await fetch(
     `http://localhost:3000/api/posts?cursor=${pageParam}&user=${userProfileId}`
@@ -28,9 +64,8 @@ export default function InfiniteFeed({
   if (error) return <p>Something went wrong!</p>;
   if (status === "pending") return <p>Loading...</p>;
 
-  const allPosts: PostType[] = data?.pages?.flatMap((page) => page.posts) || [];
-
-  console.log(allPosts);
+  const allPosts: PostWithDetails[] =
+    data?.pages?.flatMap((page) => page.posts) || [];
 
   return (
     <InfiniteScroll

@@ -42,6 +42,36 @@ export async function GET(request: NextRequest) {
   const [posts, totalPosts] = await prisma.$transaction([
     prisma.post.findMany({
       where: whereCondition,
+      include: {
+        user: {
+          select: {
+            username: true,
+            displayName: true,
+            image: true,
+          },
+        },
+        rePost: {
+          include: {
+            user: {
+              select: {
+                displayName: true,
+                username: true,
+                image: true,
+              },
+            },
+            _count: { select: { likes: true, comments: true, rePosts: true } },
+            likes: { where: { userId: userId }, select: { id: true } },
+            rePosts: { where: { userId: userId }, select: { id: true } },
+            comments: { where: { userId: userId }, select: { id: true } },
+            saves: { where: { userId: userId }, select: { id: true } },
+          },
+        },
+        _count: { select: { likes: true, rePosts: true, comments: true } },
+        likes: { where: { userId: userId }, select: { id: true } },
+        rePosts: { where: { userId: userId }, select: { id: true } },
+        comments: { where: { userId: userId }, select: { id: true } },
+        saves: { where: { userId: userId }, select: { id: true } },
+      },
       take: LIMIT,
       skip: (page - 1) * LIMIT,
     }),

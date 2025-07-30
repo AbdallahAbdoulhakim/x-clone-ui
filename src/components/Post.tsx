@@ -1,44 +1,84 @@
-import IkImage from "@/components/IkImage";
 import PostInfos from "@/components/PostInfos";
 import PostInteractions from "@/components/PostInteractions";
 import { type Post as PostType } from "@/generated/prisma";
-// import { getFileDetails } from "@/utils/imagekitFile";
 // import IkVideo from "./IkVideo";
 import Link from "next/link";
 import { format } from "timeago.js";
-import IkImageFetcher from "./IkImageFetcher";
-import { getIkImageDetails } from "@/actions";
+import IkImageFetcher from "@/components/IkImageFetcher";
+
+type PostWithDetails = PostType & {
+  user: {
+    displayName?: string | null | undefined;
+    username: string;
+    image: string | null;
+  };
+
+  rePost?:
+    | (PostType & {
+        user: {
+          displayName?: string | null | undefined;
+          username: string;
+          image: string | null;
+        };
+        _count: {
+          likes: number;
+          rePosts: number;
+          comments: number;
+        };
+        likes: { id: string }[];
+        rePosts: { id: string }[];
+        comments: { id: string }[];
+        saves: { id: string }[];
+      })
+    | null;
+  _count: {
+    likes: number;
+    rePosts: number;
+    comments: number;
+  };
+  likes: { id: string }[];
+  rePosts: { id: string }[];
+  comments: { id: string }[];
+  saves: { id: string }[];
+};
 
 export default function Post({
   type,
   post,
 }: {
   type?: "status" | "comment";
-  post: PostType;
+  post: PostWithDetails;
 }) {
-  // const fileDetails = await getFileDetails("687d0adb5c7cd75eb88ec24b");
+  const originalPost = post.rePost || post;
 
   return (
     <div className="p-4 border-y-[1px] border-borderGray">
       {/* POST TYPE */}
-      <div className="flex items-center gap-2 text-sm text-textGray mb-2 font-bold">
-        <svg
-          xmlns="http://www.w3.org/2000/svg"
-          width="18"
-          height="18"
-          viewBox="0 0 24 24"
-        >
-          <path
-            fill="#71767b"
-            d="M4.75 3.79l4.603 4.3-1.706 1.82L6 8.38v7.37c0 .97.784 1.75 1.75 1.75H13V20H7.75c-2.347 0-4.25-1.9-4.25-4.25V8.38L1.853 9.91.147 8.09l4.603-4.3zm11.5 2.71H11V4h5.25c2.347 0 4.25 1.9 4.25 4.25v7.37l1.647-1.53 1.706 1.82-4.603 4.3-4.603-4.3 1.706-1.82L18 15.62V8.25c0-.97-.784-1.75-1.75-1.75z"
-          />
-        </svg>
-        <span className="">Wildy Rachik reposted</span>
-      </div>
+      {post.rePostId && (
+        <div className="flex items-center gap-2 text-sm text-textGray mb-2 font-bold">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+          >
+            <path
+              fill="#71767b"
+              d="M4.75 3.79l4.603 4.3-1.706 1.82L6 8.38v7.37c0 .97.784 1.75 1.75 1.75H13V20H7.75c-2.347 0-4.25-1.9-4.25-4.25V8.38L1.853 9.91.147 8.09l4.603-4.3zm11.5 2.71H11V4h5.25c2.347 0 4.25 1.9 4.25 4.25v7.37l1.647-1.53 1.706 1.82-4.603 4.3-4.603-4.3 1.706-1.82L18 15.62V8.25c0-.97-.784-1.75-1.75-1.75z"
+            />
+          </svg>
+
+          <span className="">
+            {post.user.displayName ? post.user.displayName : post.user.username}{" "}
+            reposted
+          </span>
+        </div>
+      )}
       {/* POST CONTENT */}
 
       <div className={`flex gap-4 ${type === "status" && "flex-col"}`}>
         {/* AVATAR */}
+
         <div
           className={`${
             type === "status"
@@ -46,32 +86,26 @@ export default function Post({
               : "relative w-10 h-10 rounded-full overflow-hidden"
           }`}
         >
-          <IkImage
-            path="/general/avatar.png"
-            alt=""
-            w={100}
-            h={100}
-            tr={true}
+          <IkImageFetcher
+            id={originalPost.user.image || "68871a075c7cd75eb8e2a2d4"}
           />
         </div>
+
         {/* CONTENT */}
         <div className="flex-1 flex flex-col gap-2">
           {/* TOP */}
           <div className="w-full flex justify-between">
-            <Link href={`/wildyrachik`} className="flex gap-4">
+            <Link
+              href={`/${originalPost.user.username}`}
+              className="flex gap-4"
+            >
               <div
                 className={`${
-                  type !== "status"
-                    ? "hidden"
-                    : "relative w-10 h-10 rounded-full overflow-hidden"
-                }`}
+                  type !== "status" && "hidden"
+                } relative w-10 h-10 rounded-full overflow-hidden`}
               >
-                <IkImage
-                  path="/general/avatar.png"
-                  alt=""
-                  w={100}
-                  h={100}
-                  tr={true}
+                <IkImageFetcher
+                  id={originalPost.user.image || "68871a075c7cd75eb8e2a2d4"}
                 />
               </div>
               <div
@@ -79,15 +113,19 @@ export default function Post({
                   type === "status" && "flex-col gap-0 !items-start"
                 }`}
               >
-                <h1 className="text-md font-bold">Wildy Rachik</h1>
+                <h1 className="text-md font-bold">
+                  {originalPost.user.displayName
+                    ? originalPost.user.displayName
+                    : originalPost.user.username}
+                </h1>
                 <span
                   className={`text-textGray ${type === "status" && "text-sm"}`}
                 >
-                  @wildyrachik
+                  @{originalPost.user.username}
                 </span>
                 {type !== "status" && (
                   <span className="text-textGray">
-                    {format(post.createdAt)}
+                    {format(originalPost.createdAt)}
                   </span>
                 )}
               </div>
@@ -98,13 +136,17 @@ export default function Post({
             <PostInfos />
           </div>
           {/* TEXT & MEDIA */}
-          <Link href={`/wildyrachik/status/response`}>
-            <p className={`${type === "status" && "text-lg"}`}>{post.desc}</p>
+          <Link
+            href={`/${originalPost.user.username}/status/${originalPost.id}`}
+          >
+            <p className={`${type === "status" && "text-lg"}`}>
+              {originalPost.desc}
+            </p>
           </Link>
 
           {/* <IkImage path="general/post.jpeg" w={600} h={600} alt="" /> */}
 
-          {post.img && <IkImageFetcher id={post.img} />}
+          {originalPost.img && <IkImageFetcher id={originalPost.img} />}
 
           {/* {fileDetails && fileDetails.fileType === "image" ? (
            
@@ -118,7 +160,17 @@ export default function Post({
             <span className="text-textGray">8:41 PM . Dec 5, 2024</span>
           )} */}
 
-          <PostInteractions />
+          <PostInteractions
+            likes={originalPost._count.likes}
+            comments={originalPost._count.comments}
+            rePosts={originalPost._count.rePosts}
+            views={1000}
+            isLiked={!!originalPost.likes.length}
+            isReposted={!!originalPost.rePosts.length}
+            isCommented={!!originalPost.comments.length}
+            isSaved={!!originalPost.saves.length}
+            postId={originalPost.id}
+          />
         </div>
       </div>
     </div>
